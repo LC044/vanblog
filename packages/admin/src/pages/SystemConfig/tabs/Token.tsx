@@ -1,10 +1,56 @@
 import { createApiToken, getAllApiTokens, deleteApiToken } from '@/services/van-blog/api';
 import { ModalForm, ProFormText, ProTable } from '@ant-design/pro-components';
+import type { ActionType } from '@ant-design/pro-components';
 import { Button, Card, message, Modal, Space, Typography } from 'antd';
+import copy from 'copy-to-clipboard';
 
 import { useRef } from 'react';
-import { history } from 'umi';
-const columns = [
+import { useModel } from 'umi';
+
+function McpConnection({ endpoint, token = '<API_TOKEN>' }: { endpoint: string; token?: string }) {
+  const config = JSON.stringify(
+    {
+      mcpServers: {
+        vanblog: {
+          url: endpoint,
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      },
+    },
+    null,
+    2,
+  );
+
+  return (
+    <>
+      <Typography.Paragraph>
+        使用支持 Streamable HTTP 和自定义请求头的 MCP 客户端，将下面的配置添加到客户端的 MCP 设置中。
+      </Typography.Paragraph>
+      <Typography.Paragraph>
+        服务地址：
+        <Typography.Text code copyable style={{ wordBreak: 'break-all' }}>
+          {endpoint}
+        </Typography.Text>
+      </Typography.Paragraph>
+      <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{config}</pre>
+      <Button
+        type="primary"
+        onClick={() => {
+          if (copy(config)) message.success('MCP 配置已复制');
+          else message.error('复制失败，请手动复制上方配置');
+        }}
+      >
+        复制配置
+      </Button>
+      <Typography.Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0 }}>
+        MCP 复用 API Token，可查询文章、管理草稿、上传图片和发布文章。删除 Token 后，对应的 MCP
+        连接也会失效。
+      </Typography.Paragraph>
+    </>
+  );
+}
+
+const columns = (endpoint: string) => [
   { dataIndex: '_id', title: 'ID' },
   { dataIndex: 'name', title: '名称' },
   {
@@ -21,6 +67,20 @@ const columns = [
   {
     title: '操作',
     render: (text, record, _, action) => [
+      <a
+        key="mcp"
+        onClick={() => {
+          Modal.info({
+            title: `${record.name} · MCP 接入`,
+            width: 720,
+            style: { maxWidth: 'calc(100vw - 32px)' },
+            content: <McpConnection endpoint={endpoint} token={record.token} />,
+            okText: '关闭',
+          });
+        }}
+      >
+        接入 MCP
+      </a>,
       <a
         key="delete"
         style={{ marginLeft: 8 }}
@@ -42,7 +102,17 @@ const columns = [
   },
 ];
 export default function () {
-  const actionRef = useRef();
+  const actionRef = useRef<ActionType>();
+  const { initialState } = useModel('@@initialState');
+  let endpoint = new URL('/api/mcp', window.location.origin).href;
+  try {
+    const siteUrl = new URL(initialState?.baseUrl);
+    if (siteUrl.protocol === 'https:' || siteUrl.protocol === 'http:') {
+      endpoint = new URL('/api/mcp', siteUrl).href;
+    }
+  } catch {
+    // Use the current origin when the public site URL has not been configured.
+  }
   return (
     <>
       <Card
@@ -50,7 +120,7 @@ export default function () {
         style={{ marginTop: 8 }}
         className="card-body-full"
         extra={
-          <Space>
+          <Space wrap>
             <ModalForm
               title="新建 API Token"
               trigger={<Button type="primary"> 新建</Button>}
@@ -75,12 +145,14 @@ export default function () {
                   title: 'Token 管理功能介绍',
                   content: (
                     <div>
-                      <p>创建的 Api Token 可以用来调用 VanBlog 的 API</p>
-                      <p>结合 API 文档，您可以做到很多有意思的事情。</p>
-                      <p>API 文档现在比较水，会慢慢完善的，未来会有 API Playgroud，敬请期待。</p>
+                      <p>创建的 API Token 可以用来调用 VanBlog 的 API，也可以用于 MCP 接入。</p>
                       <p>
-                        PS：暂时没必要通过 API
-                        开发自己的前台，后面会出主题功能（完善的文档和开发指南，不限制技术栈），届时再开发会更好。
+                        点击 Token 右侧的“接入 MCP”，即可复制包含该 Token 的客户端配置。
+                        AI 可以查询文章、编写草稿、上传图片和发布内容。
+                      </p>
+                      <p>
+                        API 请求使用 token 请求头；MCP 请求使用 Authorization: Bearer 请求头。
+                        两者使用同一个 API Token，删除 Token 后均会失效。
                       </p>
                       <p>
                         <a
@@ -102,8 +174,9 @@ export default function () {
         }
       >
         <ProTable
-          rowKey="id"
-          columns={columns}
+          rowKey="_id"
+          columns={columns(endpoint)}
+          scroll={{ x: 'max-content' }}
           dateFormatter="string"
           actionRef={actionRef}
           search={false}
@@ -112,8 +185,8 @@ export default function () {
             hideOnSinglePage: true,
             simple: true,
           }}
-          request={async (params = {}) => {
-            let { data } = await getAllApiTokens();
+          request={async () => {
+            const { data = [] } = await getAllApiTokens();
             return {
               data,
               // success 请返回 true，
@@ -124,6 +197,13 @@ export default function () {
             };
           }}
         />
+      </Card>
+      <Card title="MCP 接入" style={{ marginTop: 16 }}>
+        <Typography.Paragraph>
+          创建 API Token 后，将配置中的 &lt;API_TOKEN&gt; 替换为 Token 内容；也可以点击上方 Token
+          右侧的“接入 MCP”，直接生成包含该 Token 的配置。
+        </Typography.Paragraph>
+        <McpConnection endpoint={endpoint} />
       </Card>
     </>
   );
