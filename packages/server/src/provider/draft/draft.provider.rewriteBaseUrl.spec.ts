@@ -9,7 +9,12 @@ function matchesMongoQuery(doc: any, query: any): boolean {
     return query.$or.some((part: any) => matchesMongoQuery(doc, part));
   }
   for (const [key, value] of Object.entries(query)) {
-    if (value && typeof value === 'object' && !Array.isArray(value) && '$exists' in (value as any)) {
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      '$exists' in (value as any)
+    ) {
       const exists = doc[key] !== undefined;
       if ((value as any).$exists !== exists) {
         return false;
@@ -33,7 +38,9 @@ function createMemoryDraftModel(initial: any[] = []) {
       if (!target) {
         return { modifiedCount: 0 };
       }
-      Object.assign(target, patch);
+      Object.assign(target, patch.$set || patch);
+      for (const [key, amount] of Object.entries(patch.$inc || {}))
+        target[key] = (target[key] || 0) + Number(amount);
       return { modifiedCount: 1 };
     }),
   };
@@ -72,11 +79,15 @@ describe('DraftProvider.rewriteBaseUrl (#475)', () => {
     const model = createMemoryDraftModel([{ ...live }]);
     const provider = new DraftProvider(model as any, {} as any);
 
-    await expect(provider.rewriteBaseUrl('https://old.example.com/', 'https://old.example.com')).resolves.toEqual({
+    await expect(
+      provider.rewriteBaseUrl('https://old.example.com/', 'https://old.example.com'),
+    ).resolves.toEqual({
       updated: 0,
       replacements: 0,
     });
-    await expect(provider.rewriteBaseUrl(undefined as any, 'https://new.example.com')).resolves.toEqual({
+    await expect(
+      provider.rewriteBaseUrl(undefined as any, 'https://new.example.com'),
+    ).resolves.toEqual({
       updated: 0,
       replacements: 0,
     });

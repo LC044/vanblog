@@ -1,0 +1,235 @@
+name: Docker GHCR
+
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  release:
+    types: [published]
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'packages/**'
+      - 'scripts/start.js'
+      - 'entrypoint.sh'
+      - 'caddyTemplate.json'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.base.json'
+      - '.github/workflows/docker-ghcr.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-ghcr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/') }}
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.config.outputs.image }}
+      version: ${{ steps.config.outputs.version }}
+      publish: ${{ steps.config.outputs.publish }}
+      revision: ${{ steps.config.outputs.revision }}
+      labels: ${{ steps.meta.outputs.labels }}
+      metadata: ${{ steps.meta.outputs.json }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.sha }}
+          persist-credentials: false
+
+      - name: Resolve image and release version
+        id: config
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "publish=$([[ "$EVENT_NAME" == pull_request ]] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          tag="$RELEASE_TAG"
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then tag="$GITHUB_REF_NAME"; fi
+          version="$(node -p 'require("./package.json").version')-edge.$(git rev-parse --short=7 HEAD)"
+          stable=false
+          edge=false
+          if [[ -n "$tag" ]]; then
+            version="$tag"
+            if [[ "$tag" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ && "$RELEASE_PRERELEASE" != true ]]; then stable=true; fi
+          elif [[ "$EVENT_NAME" != pull_request && "$GITHUB_REF_NAME" == "$DEFAULT_BRANCH" ]]; then
+            edge=true
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "is_release=$([[ -n "$tag" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "is_stable=$stable" >> "$GITHUB_OUTPUT"
+          echo "is_edge=$edge" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ steps.config.outputs.image }}
+          flavor: latest=false
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch,prefix=branch-
+            type=ref,event=pr
+            type=raw,value=edge,enable=${{ steps.config.outputs.is_edge }}
+            type=raw,value=${{ steps.config.outputs.release_tag || 'unreleased' }},enable=${{ steps.config.outputs.is_release }}
+            type=semver,pattern={{version}},value=${{ steps.config.outputs.release_tag || '0.0.0' }},enable=${{ steps.config.outputs.is_release }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.config.outputs.release_tag || '0.0.0' }},enable=${{ steps.config.outputs.is_stable }}
+            type=raw,value=latest,enable=${{ steps.config.outputs.is_stable }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ steps.config.outputs.revision }}
+            org.opencontainers.image.version=${{ steps.config.outputs.version }}
+
+  test:
+    name: Server and MCP tests
+    needs: metadata
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    services:
+      mongo:
+        image: mongo:6
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.metadata.outputs.revision }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.11.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run server tests including real MCP integration
+        env:
+          VANBLOG_MCP_TEST_MONGO_URL: mongodb://127.0.0.1:27017
+        run: pnpm --filter @vanblog/server exec jest --runInBand
+
+  build:
+    name: Build (${{ matrix.arch }})
+    needs: metadata
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.metadata.outputs.revision }}
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: needs.metadata.outputs.publish == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build full VanBlog image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          build-args: |
+            VAN_BLOG_BUILD_SERVER=http://localhost:3000
+            VAN_BLOG_VERSIONS=${{ needs.metadata.outputs.version }}
+          labels: ${{ needs.metadata.outputs.labels }}
+          provenance: false
+          outputs: ${{ needs.metadata.outputs.publish == 'true' && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', needs.metadata.outputs.image) || 'type=cacheonly' }}
+          cache-from: type=gha,scope=vanblog-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=vanblog-${{ matrix.arch }}
+
+      - name: Export platform digest
+        if: needs.metadata.outputs.publish == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          [[ "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo '::error::Invalid image digest'; exit 1; }
+          mkdir -p "$RUNNER_TEMP/ghcr-digests"
+          touch "$RUNNER_TEMP/ghcr-digests/${DIGEST#sha256:}"
+      - uses: actions/upload-artifact@v4
+        if: needs.metadata.outputs.publish == 'true'
+        with:
+          name: ghcr-digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/ghcr-digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish multi-platform image
+    needs: [metadata, build, test]
+    if: needs.metadata.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ghcr-digest-*
+          path: ${{ runner.temp }}/ghcr-digests
+          merge-multiple: true
+      - name: Publish and verify both platforms
+        env:
+          IMAGE: ${{ needs.metadata.outputs.image }}
+          METADATA: ${{ needs.metadata.outputs.metadata }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          digests=("$RUNNER_TEMP"/ghcr-digests/*)
+          [[ ${#digests[@]} -eq 2 ]] || { echo '::error::Expected two platform digests'; exit 1; }
+          mapfile -t tags < <(jq -r '.tags[]' <<< "$METADATA")
+          [[ ${#tags[@]} -gt 0 ]] || { echo '::error::No image tags'; exit 1; }
+          arguments=()
+          for tag in "${tags[@]}"; do arguments+=(--tag "$tag"); done
+          for file in "${digests[@]}"; do
+            digest="${file##*/}"
+            [[ "$digest" =~ ^[a-f0-9]{64}$ ]] || { echo '::error::Invalid digest artifact'; exit 1; }
+            arguments+=("$IMAGE@sha256:$digest")
+          done
+          docker buildx imagetools create "${arguments[@]}"
+          docker buildx imagetools inspect "${tags[0]}" --raw | jq -e '
+            [.manifests[].platform | select(.os == "linux") | .architecture] | sort == ["amd64", "arm64"]'
+          {
+            echo '### Published VanBlog image'
+            echo
+            printf -- '- `%s`\n' "${tags[@]}"
+            echo
+            echo 'Platforms: linux/amd64, linux/arm64'
+          } >> "$GITHUB_STEP_SUMMARY"

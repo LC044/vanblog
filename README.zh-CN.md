@@ -81,6 +81,10 @@ curl -L https://raw.githubusercontent.com/Mereithhh/vanblog/master/scripts/vanbl
 ./vanblog.sh
 ```
 
+### GitHub 镜像
+
+本 Fork 支持推送代码和发布版本时自动构建 GHCR 镜像：`ghcr.io/lc044/vanblog`。开发版使用 `edge`，正式发布版使用 `latest` 或版本号，支持 amd64 / arm64。[构建与部署说明](docs/advanced/ghcr.md)。
+
 ### 其他部署方式
 
 具体请移步项目文档：[快速上手](https://vanblog.mereith.com/guide/get-started.html)

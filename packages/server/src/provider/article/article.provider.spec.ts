@@ -36,7 +36,9 @@ function createMemoryArticleModel(initial: any[] = []) {
       if (!target) {
         return { modifiedCount: 0 };
       }
-      Object.assign(target, patch);
+      Object.assign(target, patch.$set || patch);
+      for (const [key, amount] of Object.entries(patch.$inc || {}))
+        target[key] = (target[key] || 0) + Number(amount);
       return { modifiedCount: 1 };
     }),
   };

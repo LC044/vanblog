@@ -12,7 +12,12 @@ function matchesMongoQuery(doc: any, query: any): boolean {
     return query.$or.some((part: any) => matchesMongoQuery(doc, part));
   }
   for (const [key, value] of Object.entries(query)) {
-    if (value && typeof value === 'object' && !Array.isArray(value) && '$exists' in (value as any)) {
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      '$exists' in (value as any)
+    ) {
       const exists = doc[key] !== undefined;
       if ((value as any).$exists !== exists) {
         return false;
@@ -36,7 +41,9 @@ function createMemoryArticleModel(initial: any[] = []) {
       if (!target) {
         return { modifiedCount: 0 };
       }
-      Object.assign(target, patch);
+      Object.assign(target, patch.$set || patch);
+      for (const [key, amount] of Object.entries(patch.$inc || {}))
+        target[key] = (target[key] || 0) + Number(amount);
       return { modifiedCount: 1 };
     }),
   };
@@ -89,7 +96,9 @@ describe('ArticleProvider.rewriteBaseUrl (#475)', () => {
     const model = createMemoryArticleModel([{ ...live }]);
     const provider = createProvider(model);
 
-    await expect(provider.rewriteBaseUrl('https://old.example.com', 'https://old.example.com/')).resolves.toEqual({
+    await expect(
+      provider.rewriteBaseUrl('https://old.example.com', 'https://old.example.com/'),
+    ).resolves.toEqual({
       updated: 0,
       replacements: 0,
     });
@@ -97,7 +106,9 @@ describe('ArticleProvider.rewriteBaseUrl (#475)', () => {
       updated: 0,
       replacements: 0,
     });
-    await expect(provider.rewriteBaseUrl('https://old.example.com', undefined as any)).resolves.toEqual({
+    await expect(
+      provider.rewriteBaseUrl('https://old.example.com', undefined as any),
+    ).resolves.toEqual({
       updated: 0,
       replacements: 0,
     });
@@ -109,9 +120,9 @@ describe('ArticleProvider.rewriteBaseUrl (#475)', () => {
   it('rejects a non-empty value that is not an http(s) URL', async () => {
     const model = createMemoryArticleModel([{ ...live }]);
     const provider = createProvider(model);
-    await expect(provider.rewriteBaseUrl('old.example.com', 'https://new.example.com')).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      provider.rewriteBaseUrl('old.example.com', 'https://new.example.com'),
+    ).rejects.toBeInstanceOf(BadRequestException);
     expect(model.docs[0].content).toBe(live.content);
   });
 });

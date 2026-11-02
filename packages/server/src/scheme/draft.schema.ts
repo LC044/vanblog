@@ -1,3 +1,4 @@
+import { Schema as MongoSchema } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
@@ -5,6 +6,20 @@ export type DraftDocument = Draft & Document;
 
 @Schema()
 export class Draft extends Document {
+  @Prop()
+  sourceArticleId?: number;
+  @Prop()
+  sourceArticleVersion?: number;
+  @Prop()
+  publishedArticleId?: number;
+  @Prop({ default: false })
+  publishing?: boolean;
+  @Prop({ type: MongoSchema.Types.Mixed })
+  articleOptions?: Record<string, any>;
+
+  @Prop({ default: 0 })
+  version: number;
+
   @Prop({ index: true, unique: true })
   id: number;
 

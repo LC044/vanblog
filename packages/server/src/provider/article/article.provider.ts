@@ -1,3 +1,4 @@
+import { versionFilter, assertVersionMatched } from 'src/utils/contentVersion';
 import { Inject, Injectable, forwardRef, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -43,6 +44,7 @@ export class ArticleProvider {
     content: 1,
     tags: 1,
     category: 1,
+    version: 1,
     updatedAt: 1,
     createdAt: 1,
     lastVisitedTime: 1,
@@ -65,6 +67,7 @@ export class ArticleProvider {
     tags: 1,
     category: 1,
     lastVisitedTime: 1,
+    version: 1,
     updatedAt: 1,
     createdAt: 1,
     id: 1,
@@ -85,6 +88,7 @@ export class ArticleProvider {
     title: 1,
     tags: 1,
     category: 1,
+    version: 1,
     updatedAt: 1,
     lastVisitedTime: 1,
     createdAt: 1,
@@ -187,7 +191,10 @@ export class ArticleProvider {
     return rewriteBaseUrlInDocuments(
       articles || [],
       async (id, content) => {
-        await this.articleModel.updateOne({ id }, { content, updatedAt: new Date() });
+        await this.articleModel.updateOne(
+          { id },
+          { $set: { content, updatedAt: new Date() }, $inc: { version: 1 } },
+        );
       },
       bases.oldBase,
       bases.newBase,
@@ -1023,9 +1030,15 @@ export class ArticleProvider {
   async findAll(): Promise<Article[]> {
     return this.articleModel.find({}).exec();
   }
-  async deleteById(id: number | string) {
+  async deleteById(id: number | string, expectedVersion?: number) {
     const numericId = parseNumericId(id);
-    const res = await this.articleModel.updateOne({ id: numericId }, { deleted: true }).exec();
+    const res = await this.articleModel
+      .updateOne(versionFilter(numericId, expectedVersion), {
+        $set: { deleted: true, updatedAt: new Date() },
+        $inc: { version: 1 },
+      })
+      .exec();
+    assertVersionMatched(res, expectedVersion);
     this.metaProvider.updateTotalWords('删除文章');
     return res;
   }
@@ -1034,22 +1047,27 @@ export class ArticleProvider {
     if (!oldName || !newName || oldName === newName) {
       return { modifiedCount: 0 };
     }
-    return this.articleModel.updateMany({ category: oldName }, { category: newName });
+    return this.articleModel.updateMany(
+      { category: oldName },
+      { $set: { category: newName, updatedAt: new Date() }, $inc: { version: 1 } },
+    );
   }
 
   async updateById(
     id: number | string,
     updateArticleDto: UpdateArticleDto,
     skipUpdateWordCount?: boolean,
+    expectedVersion?: number,
   ) {
     const numericId = parseNumericId(id);
-    const res = await this.articleModel.updateOne(
-      { id: numericId },
-      {
-        ...updateArticleDto,
-        updatedAt: updateArticleDto.updatedAt || new Date(),
-      },
-    );
+    const { version: _version, ...changes } = updateArticleDto as UpdateArticleDto & {
+      version?: number;
+    };
+    const res = await this.articleModel.updateOne(versionFilter(numericId, expectedVersion), {
+      $set: { ...changes, updatedAt: updateArticleDto.updatedAt || new Date() },
+      $inc: { version: 1 },
+    });
+    assertVersionMatched(res, expectedVersion);
     if (!skipUpdateWordCount) {
       this.metaProvider.updateTotalWords('更新文章');
     }

@@ -12,7 +12,12 @@ function matchesMongoQuery(doc: any, query: any): boolean {
     return query.$or.some((part: any) => matchesMongoQuery(doc, part));
   }
   for (const [key, value] of Object.entries(query)) {
-    if (value && typeof value === 'object' && !Array.isArray(value) && '$exists' in (value as any)) {
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      '$exists' in (value as any)
+    ) {
       const exists = doc[key] !== undefined;
       if ((value as any).$exists !== exists) {
         return false;
@@ -39,7 +44,9 @@ function createMemoryArticleModel(initial: any[] = []) {
         if (!target) {
           return { modifiedCount: 0 };
         }
-        Object.assign(target, patch);
+        Object.assign(target, patch.$set || patch);
+        for (const [key, amount] of Object.entries(patch.$inc || {}))
+          target[key] = (target[key] || 0) + Number(amount);
         return { modifiedCount: 1 };
       };
       return { exec, then: (resolve: any, reject: any) => exec().then(resolve, reject) };

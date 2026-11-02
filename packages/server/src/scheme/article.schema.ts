@@ -5,6 +5,9 @@ export type ArticleDocument = Article & Document;
 
 @Schema()
 export class Article extends Document {
+  @Prop({ default: 0 })
+  version: number;
+
   @Prop({ index: true, unique: true })
   id: number;
 

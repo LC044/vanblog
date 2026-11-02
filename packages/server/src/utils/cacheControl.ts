@@ -3,8 +3,7 @@
  * responses when a broad "cache everything" page rule is in front of VanBlog.
  * @see https://github.com/Mereithhh/vanblog/issues/140
  */
-export const NO_STORE_CACHE_CONTROL =
-  'private, no-store, no-cache, must-revalidate';
+export const NO_STORE_CACHE_CONTROL = 'private, no-store, no-cache, must-revalidate';
 export const CDN_NO_STORE = 'no-store';
 export const PRAGMA_NO_CACHE = 'no-cache';
 export const EXPIRES_IMMEDIATELY = '0';
@@ -48,6 +47,7 @@ export function pathFromRequest(req: {
 export function isAdminNoStorePath(pathname: string): boolean {
   const path = normalizeRequestPath(pathname);
   return (
+    path === '/api/mcp' ||
     path === '/admin' ||
     path.startsWith('/admin/') ||
     path === '/api/admin' ||
@@ -67,13 +67,9 @@ export function hasNoStoreCachePolicy(headers: {
   [key: string]: string | string[] | undefined;
 }): boolean {
   const cacheControl = String(headers['cache-control'] || headers['Cache-Control'] || '');
-  const cdn = String(
-    headers['cdn-cache-control'] || headers['CDN-Cache-Control'] || '',
-  );
+  const cdn = String(headers['cdn-cache-control'] || headers['CDN-Cache-Control'] || '');
   const cf = String(
-    headers['cloudflare-cdn-cache-control'] ||
-      headers['Cloudflare-CDN-Cache-Control'] ||
-      '',
+    headers['cloudflare-cdn-cache-control'] || headers['Cloudflare-CDN-Cache-Control'] || '',
   );
   return (
     /no-store/i.test(cacheControl) &&

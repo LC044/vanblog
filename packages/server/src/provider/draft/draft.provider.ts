@@ -1,4 +1,10 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { versionFilter, assertVersionMatched } from 'src/utils/contentVersion';
+import {
+  ConflictException,
+  NotFoundException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateArticleDto } from 'src/types/article.dto';
@@ -32,6 +38,7 @@ export class DraftProvider {
     content: 1,
     tags: 1,
     category: 1,
+    version: 1,
     updatedAt: 1,
     createdAt: 1,
     author: 1,
@@ -44,6 +51,7 @@ export class DraftProvider {
     content: 1,
     tags: 1,
     category: 1,
+    version: 1,
     updatedAt: 1,
     createdAt: 1,
     author: 1,
@@ -55,6 +63,7 @@ export class DraftProvider {
     title: 1,
     tags: 1,
     category: 1,
+    version: 1,
     updatedAt: 1,
     createdAt: 1,
     author: 1,
@@ -118,7 +127,10 @@ export class DraftProvider {
     return rewriteBaseUrlInDocuments(
       drafts || [],
       async (id, content) => {
-        await this.draftModel.updateOne({ id }, { content, updatedAt: new Date() });
+        await this.draftModel.updateOne(
+          { id },
+          { $set: { content, updatedAt: new Date() }, $inc: { version: 1 } },
+        );
       },
       bases.oldBase,
       bases.newBase,
@@ -198,25 +210,108 @@ export class DraftProvider {
       total,
     };
   }
-  async publish(id: number, options: PublishDraftDto) {
-    const draft = await this.getById(id);
-    if (!draft.content.includes('<!-- more -->')) {
-      throw new ForbiddenException('未包含 more 标记，请修改后再发布！');
-    }
-    assertArticleHasPassword(options || {}, null);
-    const createArticleDto: CreateArticleDto = {
-      title: draft.title,
-      content: draft.content,
-      tags: draft.tags,
-      category: draft.category,
-      author: draft.author,
+  async publish(id: number, options: PublishDraftDto, expectedVersion?: number) {
+    const filter: any = {
+      ...versionFilter(parseNumericId(id), expectedVersion),
+      deleted: false,
+      publishing: { $ne: true },
     };
-    for (const [k, v] of Object.entries(options || {})) {
-      createArticleDto[k] = v;
+    const draft = await this.draftModel.findOneAndUpdate(
+      filter,
+      { $set: { publishing: true } },
+      { new: true },
+    );
+    if (!draft) throw new ConflictException('VERSION_CONFLICT: 草稿已修改、已删除或正在发布。');
+    let writeStarted = false;
+    try {
+      if (!(draft.content || '').includes('<!-- more -->'))
+        throw new ForbiddenException('未包含 more 标记，请修改后再发布！');
+      const articleOptions = { ...(draft.articleOptions || {}), ...options };
+      assertArticleHasPassword(articleOptions, null);
+      const dto: any = {
+        ...articleOptions,
+        title: draft.title,
+        content: draft.content,
+        tags: draft.tags,
+        category: draft.category,
+        author: draft.author,
+      };
+      let article: any;
+      if (draft.publishedArticleId) {
+        article = await this.articleProvider.getById(draft.publishedArticleId, 'admin');
+        if (!article)
+          throw new ConflictException('OPERATION_INCOMPLETE: 已发布文章不可用，请检查博客状态。');
+      } else if (draft.sourceArticleId) {
+        writeStarted = true;
+        await this.articleProvider.updateById(
+          draft.sourceArticleId,
+          { ...dto, deleted: false },
+          false,
+          draft.sourceArticleVersion,
+        );
+        article = await this.articleProvider.getById(draft.sourceArticleId, 'admin');
+      } else {
+        writeStarted = true;
+        article = await this.articleProvider.create(dto);
+      }
+      await this.draftModel.updateOne(
+        { id: draft.id },
+        {
+          $set: {
+            publishedArticleId: article.id,
+            deleted: true,
+            publishing: false,
+            updatedAt: new Date(),
+          },
+          $inc: { version: 1 },
+        },
+      );
+      return article;
+    } catch (error) {
+      // Once a write may have happened, keep the lock on uncertain failures.
+      // An operator must reconcile it rather than risk publishing a second article.
+      if (!writeStarted)
+        await this.draftModel.updateOne({ id: draft.id }, { $set: { publishing: false } });
+      throw error;
     }
-    const res = await this.articleProvider.create(createArticleDto);
-    await this.deleteById(id);
-    return res;
+  }
+
+  async unpublish(articleId: number, expectedVersion: number) {
+    const article = await this.articleProvider.getById(articleId, 'admin');
+    if (!article) throw new NotFoundException('找不到文章');
+    if ((article.version || 0) !== expectedVersion)
+      throw new ConflictException('VERSION_CONFLICT: 文章已修改。');
+    const {
+      title,
+      content,
+      tags,
+      category,
+      author,
+      pathname,
+      private: isPrivate,
+      password,
+      hidden,
+      copyright,
+      cover,
+      top,
+    } = article;
+    const draft = await this.create({
+      title,
+      content,
+      tags,
+      category,
+      author,
+      sourceArticleId: articleId,
+      sourceArticleVersion: expectedVersion + 1,
+      articleOptions: { pathname, private: isPrivate, password, hidden, copyright, cover, top },
+    } as any);
+    try {
+      await this.articleProvider.deleteById(articleId, expectedVersion);
+    } catch (error) {
+      if (error instanceof ConflictException) await this.deleteById(draft.id);
+      throw error;
+    }
+    return draft;
   }
 
   async getAll(): Promise<Draft[]> {
@@ -249,24 +344,43 @@ export class DraftProvider {
   async findAll(): Promise<Draft[]> {
     return this.draftModel.find().exec();
   }
-  async deleteById(id: number | string) {
+  async deleteById(id: number | string, expectedVersion?: number) {
     const numericId = parseNumericId(id);
-    return this.draftModel.updateOne({ id: numericId }, { deleted: true }).exec();
+    const result = await this.draftModel
+      .updateOne(
+        { ...versionFilter(numericId, expectedVersion), publishing: { $ne: true } },
+        { $set: { deleted: true, updatedAt: new Date() }, $inc: { version: 1 } },
+      )
+      .exec();
+    assertVersionMatched(result, expectedVersion);
+    if (result.matchedCount === 0)
+      throw new ConflictException('VERSION_CONFLICT: 草稿不存在或正在发布。');
+    return result;
   }
 
   async updateCategoryName(oldName: string, newName: string) {
     if (!oldName || !newName || oldName === newName) {
       return { modifiedCount: 0 };
     }
-    return this.draftModel.updateMany({ category: oldName }, { category: newName });
+    return this.draftModel.updateMany(
+      { category: oldName },
+      { $set: { category: newName, updatedAt: new Date() }, $inc: { version: 1 } },
+    );
   }
 
-  async updateById(id: number | string, updateDraftDto: UpdateDraftDto) {
+  async updateById(id: number | string, updateDraftDto: UpdateDraftDto, expectedVersion?: number) {
     const numericId = parseNumericId(id);
-    return this.draftModel.updateOne(
-      { id: numericId },
-      { ...updateDraftDto, updatedAt: new Date() },
+    const { version: _version, ...changes } = updateDraftDto as UpdateDraftDto & {
+      version?: number;
+    };
+    const result = await this.draftModel.updateOne(
+      { ...versionFilter(numericId, expectedVersion), publishing: { $ne: true } },
+      { $set: { ...changes, updatedAt: new Date() }, $inc: { version: 1 } },
     );
+    assertVersionMatched(result, expectedVersion);
+    if (result.matchedCount === 0)
+      throw new ConflictException('VERSION_CONFLICT: 草稿不存在或正在发布。');
+    return result;
   }
 
   async getNewId() {

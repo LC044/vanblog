@@ -1,3 +1,4 @@
+import { DraftWorkflow } from 'src/provider/content/draft.workflow';
 import {
   Body,
   Controller,
@@ -16,7 +17,6 @@ import { SortOrder } from 'src/types/sort';
 import { AdminGuard } from 'src/provider/auth/auth.guard';
 import { DraftProvider } from 'src/provider/draft/draft.provider';
 import { ISRProvider } from 'src/provider/isr/isr.provider';
-import { config } from 'src/config';
 import { PipelineProvider } from 'src/provider/pipeline/pipeline.provider';
 import { ApiToken } from 'src/provider/swagger/token';
 import { sanitizePagination } from 'src/utils/pagination';
@@ -25,12 +25,14 @@ import { sanitizePagination } from 'src/utils/pagination';
 @UseGuards(...AdminGuard)
 @ApiToken
 @Controller('/api/admin/draft')
-export class DraftController {
+export class DraftController extends DraftWorkflow {
   constructor(
-    private readonly draftProvider: DraftProvider,
-    private readonly isrProvider: ISRProvider,
-    private readonly pipelineProvider: PipelineProvider,
-  ) {}
+    protected readonly draftProvider: DraftProvider,
+    protected readonly isrProvider: ISRProvider,
+    protected readonly pipelineProvider: PipelineProvider,
+  ) {
+    super(draftProvider, isrProvider, pipelineProvider);
+  }
 
   @Get('/')
   async getByOption(
@@ -74,76 +76,19 @@ export class DraftController {
 
   @Put('/:id')
   async update(@Param('id') id: number, @Body() updateDto: UpdateDraftDto) {
-    const result = await this.pipelineProvider.dispatchEvent('beforeUpdateDraft', updateDto);
-    if (result.length > 0) {
-      const lastResult = result[result.length - 1];
-      const lastOuput = lastResult.output;
-      if (lastOuput) {
-        updateDto = lastOuput;
-      }
-    }
-    const data = await this.draftProvider.updateById(id, updateDto);
-    const updated = await this.draftProvider.findById(id);
-    this.pipelineProvider.dispatchEvent('afterUpdateDraft', updated);
-    return {
-      statusCode: 200,
-      data,
-    };
+    return this.workflowUpdate(id, updateDto);
   }
 
   @Post()
   async create(@Req() req: any, @Body() createDto: CreateDraftDto) {
-    const author = req?.user?.nickname || undefined;
-    if (!createDto.author) {
-      createDto.author = author;
-    }
-    const result = await this.pipelineProvider.dispatchEvent('beforeUpdateDraft', createDto);
-    if (result.length > 0) {
-      const lastResult = result[result.length - 1];
-      const lastOuput = lastResult.output;
-      if (lastOuput) {
-        createDto = lastOuput;
-      }
-    }
-    const data = await this.draftProvider.create(createDto);
-    this.pipelineProvider.dispatchEvent('afterUpdateDraft', data);
-    return {
-      statusCode: 200,
-      data,
-    };
+    return this.workflowCreate(req, createDto);
   }
   @Post('/publish')
   async publish(@Query('id') id: number, @Body() publishDto: PublishDraftDto) {
-    if (config.demo && config.demo == 'true') {
-      return {
-        statusCode: 401,
-        message: '演示站禁止发布草稿！',
-      };
-    }
-    const result = await this.pipelineProvider.dispatchEvent('beforeUpdateArticle', publishDto);
-    if (result.length > 0) {
-      const lastResult = result[result.length - 1];
-      const lastOuput = lastResult.output;
-      if (lastOuput) {
-        publishDto = lastOuput;
-      }
-    }
-    const data = await this.draftProvider.publish(id, publishDto);
-    this.isrProvider.activeAll('发布草稿触发增量渲染！');
-    this.pipelineProvider.dispatchEvent('afterUpdateArticle', data);
-    return {
-      statusCode: 200,
-      data,
-    };
+    return this.workflowPublish(id, publishDto);
   }
   @Delete('/:id')
   async delete(@Param('id') id: number) {
-    const toDeleteDraft = await this.draftProvider.findById(id);
-    const data = await this.draftProvider.deleteById(id);
-    this.pipelineProvider.dispatchEvent('deleteDraft', toDeleteDraft);
-    return {
-      statusCode: 200,
-      data,
-    };
+    return this.workflowDelete(id);
   }
 }

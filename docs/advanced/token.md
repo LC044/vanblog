@@ -10,3 +10,8 @@ VanBlog 致力于成为一个高扩展、API First 的博客系统，虽然现�
 ![](https://pic.mereith.com/img/8c27dee1b90fca797426c787350599b3.clipboard-2023-03-22.png)
 
 > [API 参考](/reference/api.md)
+
+
+## MCP
+
+现有 API Token 也可用于 [MCP 接入](./mcp.md)，请求头使用 `Authorization: Bearer <API Token>`。

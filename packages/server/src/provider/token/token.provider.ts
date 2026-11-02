@@ -46,7 +46,7 @@ export class TokenProvider {
       },
     );
     // 默认666666是 api token
-    this.tokenModel.create({ userId: 666666, name, token, expiresIn });
+    await this.tokenModel.create({ userId: 666666, name, token, expiresIn });
     return token;
   }
 
@@ -84,5 +84,9 @@ export class TokenProvider {
       return false;
     }
     return true;
+  }
+
+  async checkAPIToken(token: string) {
+    return Boolean(await this.tokenModel.exists({ token, userId: 666666, disabled: false }));
   }
 }

@@ -34,15 +34,23 @@ function createMemoryDraftModel(initial: any[] = []) {
   };
   return {
     docs,
+    findOneAndUpdate: jest.fn(async (query: any, patch: any) => {
+      const target = findMatching(query);
+      if (!target || target.publishing) return null;
+      Object.assign(target, patch.$set || patch);
+      return { ...target };
+    }),
     findOne: jest.fn((query: any) => ({
       exec: async () => findMatching(query),
     })),
     updateOne: jest.fn((query: any, patch: any) => {
       assertQueryId(query?.id);
       const target = findMatching(query);
-      const result = { modifiedCount: 0 };
+      const result = { modifiedCount: 0, matchedCount: target ? 1 : 0 };
       if (target) {
-        Object.assign(target, patch);
+        Object.assign(target, patch.$set || patch);
+        for (const [key, amount] of Object.entries(patch.$inc || {}))
+          target[key] = (target[key] || 0) + Number(amount);
         result.modifiedCount = 1;
       }
       const pending: any = Promise.resolve(result);

@@ -38,7 +38,9 @@ function createMemoryCategoryModel(initial: any[] = []) {
     updateOne: jest.fn(async (query: any, patch: any) => {
       const target = findMatching(query);
       if (target) {
-        Object.assign(target, patch);
+        Object.assign(target, patch.$set || patch);
+        for (const [key, amount] of Object.entries(patch.$inc || {}))
+          target[key] = (target[key] || 0) + Number(amount);
       }
     }),
     deleteOne: jest.fn(async (query: any) => {
@@ -60,7 +62,9 @@ function createMemoryNamedModel(initial: any[] = []) {
         if (query?.category != null && doc.category !== query.category) {
           continue;
         }
-        Object.assign(doc, patch);
+        Object.assign(doc, patch.$set || patch);
+        for (const [key, amount] of Object.entries(patch.$inc || {}))
+          doc[key] = (doc[key] || 0) + Number(amount);
         modifiedCount += 1;
       }
       return { modifiedCount };
@@ -70,7 +74,9 @@ function createMemoryNamedModel(initial: any[] = []) {
       if (!target) {
         return { modifiedCount: 0 };
       }
-      Object.assign(target, patch);
+      Object.assign(target, patch.$set || patch);
+      for (const [key, amount] of Object.entries(patch.$inc || {}))
+        target[key] = (target[key] || 0) + Number(amount);
       return { modifiedCount: 1 };
     }),
     find: jest.fn(() => ({
@@ -81,11 +87,7 @@ function createMemoryNamedModel(initial: any[] = []) {
   };
 }
 
-function createRenameStack(seed?: {
-  categories?: any[];
-  articles?: any[];
-  drafts?: any[];
-}) {
+function createRenameStack(seed?: { categories?: any[]; articles?: any[]; drafts?: any[] }) {
   const categoryModel = createMemoryCategoryModel(seed?.categories || []);
   const articleModel = createMemoryNamedModel(seed?.articles || []);
   const draftModel = createMemoryNamedModel(seed?.drafts || []);
@@ -133,9 +135,7 @@ describe('CategoryProvider.importCategories', () => {
     ]);
     const provider = new CategoryProvider(model as any, {} as any, {} as any);
 
-    await provider.importCategories([
-      { id: 9, name: '随笔', private: true, password: 'pw' },
-    ]);
+    await provider.importCategories([{ id: 9, name: '随笔', private: true, password: 'pw' }]);
 
     expect(model.docs).toHaveLength(1);
     expect(model.docs[0]).toMatchObject({
