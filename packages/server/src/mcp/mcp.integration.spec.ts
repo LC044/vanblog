@@ -8,7 +8,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import request from 'supertest';
 import sharp from 'sharp';
-import { mkdtempSync, mkdirSync, rmSync } from 'fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import { tmpdir } from 'os';
 import path from 'path';
 import { json } from 'express';
@@ -43,6 +45,11 @@ import { McpToolsService } from './mcp-tools.service';
 import { McpImageService } from './mcp-image.service';
 import { McpOperationService } from './mcp-operation.service';
 import { McpOperation, McpOperationSchema } from './mcp-operation.schema';
+import { ArticleController } from 'src/controller/admin/article/article.controller';
+import { DraftController } from 'src/controller/admin/draft/draft.controller';
+import { ImgController } from 'src/controller/admin/img/img.controller';
+import { JwtStrategy } from 'src/provider/auth/jwt.strategy';
+import { UserProvider } from 'src/provider/user/user.provider';
 
 // Opt in to a MongoDB instance; all data lives in a uniquely named temporary database.
 const describeMongo = process.env.VANBLOG_MCP_TEST_MONGO_URL ? describe : describe.skip;
@@ -55,6 +62,7 @@ describeMongo('MCP HTTP + real MongoDB + existing API Token', () => {
   let folder: string;
   const originalStaticPath = config.staticPath;
   const originalDemo = config.demo;
+  const originalJwtSecret = global.jwtSecret;
   const pipeline = { dispatchEvent: jest.fn().mockResolvedValue([]) };
   const isr = { activeAll: jest.fn() };
 
@@ -65,6 +73,7 @@ describeMongo('MCP HTTP + real MongoDB + existing API Token', () => {
     folder = mkdtempSync(path.join(tmpdir(), 'vanblog-mcp-'));
     config.staticPath = folder;
     config.demo = false;
+    global.jwtSecret = 'mcp-integration-only-secret';
     mkdirSync(path.join(folder, 'img'));
     const definitions: Array<[any, any]> = [
       [Article, ArticleSchema],
@@ -76,7 +85,7 @@ describeMongo('MCP HTTP + real MongoDB + existing API Token', () => {
     ];
     const module = await Test.createTestingModule({
       imports: [JwtModule.register({ secret: 'mcp-integration-only-secret' })],
-      controllers: [McpController],
+      controllers: [McpController, ArticleController, DraftController, ImgController],
       providers: [
         ...definitions.map(([type, schema]) => ({
           provide: getModelToken(type.name),
@@ -89,6 +98,8 @@ describeMongo('MCP HTTP + real MongoDB + existing API Token', () => {
         ArticleProvider,
         DraftProvider,
         TokenProvider,
+        JwtStrategy,
+        { provide: UserProvider, useValue: { getUser: async () => ({ nickname: 'Author' }) } },
         ArticleWorkflow,
         DraftWorkflow,
         StaticProvider,
@@ -140,6 +151,7 @@ describeMongo('MCP HTTP + real MongoDB + existing API Token', () => {
     if (folder) rmSync(folder, { recursive: true, force: true });
     config.staticPath = originalStaticPath;
     config.demo = originalDemo;
+    global.jwtSecret = originalJwtSecret;
   });
 
   async function call(name: string, args: any = {}) {
@@ -390,4 +402,44 @@ describeMongo('MCP HTTP + real MongoDB + existing API Token', () => {
       config.mongoUrl = originalMongoUrl;
     }
   });
+
+  it('publishes local Markdown and binary images through CLI, real REST guards and MongoDB', async () => {
+    const execute = promisify(execFile);
+    const script = path.resolve(__dirname, '../../../cli/skills/vanblog/scripts/vanblog.js');
+    const env = { ...process.env, VANBLOG_URL: await app.getUrl(), VANBLOG_API_TOKEN: token };
+    async function cli(...args: string[]) {
+      const result = await execute(process.execPath, [script, ...args], { env });
+      return JSON.parse(result.stdout);
+    }
+    const png = await sharp({ create: { width: 32, height: 24, channels: 3, background: '#123456' } }).png().toBuffer();
+    const imageFile = path.join(folder, '本地 图片.png');
+    writeFileSync(imageFile, png);
+    const uploaded = await cli('images', 'upload', imageFile, '--watermark', 'false');
+    expect(uploaded.failed).toEqual([]);
+    expect(uploaded.images).toHaveLength(1);
+    expect(uploaded.images[0].url).toMatch(/^http/);
+    const content = `CLI 摘要\n<!-- more -->\n正文\n${uploaded.images[0].markdown}`;
+    const markdown = path.join(folder, 'cli-article.md');
+    writeFileSync(markdown, content);
+    const draft = await cli('posts', 'save', '--title', 'CLI REST integration', '--category', '技术', '--content-file', markdown);
+    expect(draft.id).toEqual(expect.any(Number));
+    expect(draft.content).toBeUndefined();
+    await cli('posts', 'save', '--id', String(draft.id), '--tag', 'MCP');
+    const article = await cli('posts', 'publish', String(draft.id), '--pathname', 'cli-rest-test');
+    expect(article.url).toContain('/post/cli-rest-test');
+    const bodyFile = path.join(folder, 'verified.md');
+    await cli('posts', 'get', String(article.id), '--content-output', bodyFile);
+    expect(readFileSync(bodyFile, 'utf8')).toBe(content);
+    expect(await connection.model(Article.name).countDocuments({ title: 'CLI REST integration', deleted: false })).toBe(1);
+    const record: any = await connection.model(Draft.name).findOne({ id: draft.id }).lean();
+    expect(record.deleted).toBe(true);
+    // Generic access uses the same real REST authentication, not MCP's tool surface.
+    const raw = await cli('api', 'request', 'GET', `/api/admin/article/${article.id}`);
+    expect(raw.data.content).toBe(content);
+    const revoked = await app.get(TokenProvider).createAPIToken('cli-revoked');
+    await app.get(TokenProvider).disableAPIToken(revoked);
+    await expect(execute(process.execPath, [script, 'posts', 'list'], {
+      env: { ...env, VANBLOG_API_TOKEN: revoked },
+    })).rejects.toMatchObject({ code: 1 });
+  }, 30000);
 });

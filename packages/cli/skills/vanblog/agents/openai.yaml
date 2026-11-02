@@ -1,0 +1,3 @@
+interface:
+  display_name: "VanBlog"
+  short_description: "用本地 Markdown 和图片发布 VanBlog 文章，并按需访问完整 API"

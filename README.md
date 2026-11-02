@@ -44,6 +44,10 @@ The demo admin username and password are both `demo`. The documentation and appl
 - **Collaboration and APIs.** Collaborator accounts with configurable permissions, token management, and APIs for building a separate frontend or integrating another page generator.
 - **Deployment and operations.** A guided installation script, Docker deployment with AMD64 and ARM64 support, and automatic on-demand HTTPS certificate issuance and renewal through Caddy. The admin dashboard provides import/export, version and update notices, and access to login and Caddy logs.
 
+## Agent publishing skill and CLI
+
+The [VanBlog Skill](packages/cli/skills/vanblog/SKILL.md) publishes local Markdown and images using your existing API Token. Images stream directly from local files without Base64 tool arguments. The accompanying [CLI](packages/cli/README.md) also supports the complete HTTP API, with offline endpoint discovery and live Swagger lookup. Requires Node.js 18+.
+
 ## Maintenance and releases
 
 VanBlog uses an automated AI maintenance workflow to reproduce reported code issues, add regression tests, and open pull requests, with corresponding changelog and documentation updates. The maintainer remains responsible for merging into `master` and creating release tags. Issues and pull requests are welcome.

@@ -1,0 +1,1935 @@
+{
+  "format": "vanblog-api-index-v1",
+  "source": "NestJS controller and DTO declarations",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "operationId": "AppController_getHello",
+      "source": "packages/server/src/app.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/analysis",
+      "operationId": "AnalysisController_getWelcomePageData",
+      "source": "packages/server/src/controller/admin/analysis/analysis.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "tab",
+          "type": "WelcomeTab",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "viewerDataNum",
+          "type": "unknown",
+          "required": false,
+          "default": "5"
+        },
+        {
+          "in": "query",
+          "name": "overviewDataNum",
+          "type": "unknown",
+          "required": false,
+          "default": "5"
+        },
+        {
+          "in": "query",
+          "name": "articleTabDataNum",
+          "type": "unknown",
+          "required": false,
+          "default": "5"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/article",
+      "operationId": "ArticleController_getByOption",
+      "source": "packages/server/src/controller/admin/article/article.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "pageSize",
+          "type": "unknown",
+          "required": false,
+          "default": "5"
+        },
+        {
+          "in": "query",
+          "name": "toListView",
+          "type": "unknown",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "in": "query",
+          "name": "regMatch",
+          "type": "unknown",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "in": "query",
+          "name": "category",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "tags",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "sortCreatedAt",
+          "type": "SortOrder",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "sortTop",
+          "type": "SortOrder",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "sortViewer",
+          "type": "SortOrder",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "startTime",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "endTime",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/article",
+      "operationId": "ArticleController_create",
+      "source": "packages/server/src/controller/admin/article/article.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "CreateArticleDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1article.dto.ts#CreateArticleDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/article/:id",
+      "operationId": "ArticleController_delete",
+      "source": "packages/server/src/controller/admin/article/article.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/article/:id",
+      "operationId": "ArticleController_getOneByIdOrPathname",
+      "source": "packages/server/src/controller/admin/article/article.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/article/:id",
+      "operationId": "ArticleController_update",
+      "source": "packages/server/src/controller/admin/article/article.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "type": "UpdateArticleDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1article.dto.ts#UpdateArticleDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/article/searchByLink",
+      "operationId": "ArticleController_searchArtcilesByLink",
+      "source": "packages/server/src/controller/admin/article/article.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "{ link: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/audit",
+      "operationId": "LogController_get",
+      "source": "packages/server/src/controller/admin/log/log.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "pageSize",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "event",
+          "type": "EventType",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/auth",
+      "operationId": "AuthController_updateUser",
+      "source": "packages/server/src/controller/admin/auth/auth.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "UpdateUserDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1user.dto.ts#UpdateUserDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/auth/login",
+      "operationId": "AuthController_login",
+      "source": "packages/server/src/controller/admin/auth/auth.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/auth/logout",
+      "operationId": "AuthController_logout",
+      "source": "packages/server/src/controller/admin/auth/auth.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/auth/restore",
+      "operationId": "AuthController_restore",
+      "source": "packages/server/src/controller/admin/auth/auth.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "{ key: string; name: string; password: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/backup/export",
+      "operationId": "BackupController_getAll",
+      "source": "packages/server/src/controller/admin/backup/backup.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/backup/import",
+      "operationId": "BackupController_importAll",
+      "source": "packages/server/src/controller/admin/backup/backup.controller.ts",
+      "parameters": [],
+      "upload": {
+        "contentType": "multipart/form-data",
+        "field": "file"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/caddy/ask",
+      "operationId": "CaddyController_askOnDemand",
+      "source": "packages/server/src/controller/admin/caddy/caddy.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "domain",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/caddy/config",
+      "operationId": "CaddyController_getCaddyConfig",
+      "source": "packages/server/src/controller/admin/caddy/caddy.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/caddy/https",
+      "operationId": "CaddyController_getHttpsConfig",
+      "source": "packages/server/src/controller/admin/caddy/caddy.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/caddy/https",
+      "operationId": "CaddyController_updateHttpsConfig",
+      "source": "packages/server/src/controller/admin/caddy/caddy.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "HttpsSetting",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1setting.dto.ts#HttpsSetting"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/caddy/log",
+      "operationId": "CaddyController_clearLog",
+      "source": "packages/server/src/controller/admin/caddy/caddy.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/caddy/log",
+      "operationId": "CaddyController_getCaddyLog",
+      "source": "packages/server/src/controller/admin/caddy/caddy.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/category",
+      "operationId": "CategoryController_createCategory",
+      "source": "packages/server/src/controller/admin/category/category.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "CreateCategoryDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1category.dto.ts#CreateCategoryDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/category/:name",
+      "operationId": "CategoryController_deleteCategory",
+      "source": "packages/server/src/controller/admin/category/category.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/category/:name",
+      "operationId": "CategoryController_getArticlesByName",
+      "source": "packages/server/src/controller/admin/category/category.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/category/:name",
+      "operationId": "CategoryController_updateCategoryByName",
+      "source": "packages/server/src/controller/admin/category/category.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "type": "UpdateCategoryDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1category.dto.ts#UpdateCategoryDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/category/all",
+      "operationId": "CategoryController_getAllTags",
+      "source": "packages/server/src/controller/admin/category/category.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "detail",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/category/all/order",
+      "operationId": "CategoryController_reorderCategories",
+      "source": "packages/server/src/controller/admin/category/category.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "ReorderCategoriesDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1category.dto.ts#ReorderCategoriesDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/collaborator",
+      "operationId": "CollaboratorController_getAllCollaborators",
+      "source": "packages/server/src/controller/admin/collaborator/collaborator.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/collaborator",
+      "operationId": "CollaboratorController_createCollaborator",
+      "source": "packages/server/src/controller/admin/collaborator/collaborator.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "Collaborator",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1collaborator.ts#Collaborator"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/collaborator",
+      "operationId": "CollaboratorController_updateCollaborator",
+      "source": "packages/server/src/controller/admin/collaborator/collaborator.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "Collaborator",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1collaborator.ts#Collaborator"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/collaborator/:id",
+      "operationId": "CollaboratorController_deleteCollaboratorById",
+      "source": "packages/server/src/controller/admin/collaborator/collaborator.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/collaborator/list",
+      "operationId": "CollaboratorController_getAllCollaboratorsList",
+      "source": "packages/server/src/controller/admin/collaborator/collaborator.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/customPage",
+      "operationId": "CustomPageController_deleteOne",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/customPage",
+      "operationId": "CustomPageController_getOneByPath",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/customPage",
+      "operationId": "CustomPageController_createOne",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "CustomPage",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1scheme~1customPage.schema.ts#CustomPage"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/customPage",
+      "operationId": "CustomPageController_updateOne",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "CustomPage",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1scheme~1customPage.schema.ts#CustomPage"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/customPage/all",
+      "operationId": "CustomPageController_getAll",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/customPage/file",
+      "operationId": "CustomPageController_deleteFile",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "key",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/customPage/file",
+      "operationId": "CustomPageController_getFileData",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "key",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/customPage/file",
+      "operationId": "CustomPageController_createFile",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "subPath",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/customPage/file",
+      "operationId": "CustomPageController_updateFileInFolder",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "{ filePath: string; pathname: string; content: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/customPage/folder",
+      "operationId": "CustomPageController_getFolderFiles",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/customPage/folder",
+      "operationId": "CustomPageController_createFolder",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "subPath",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/customPage/upload",
+      "operationId": "CustomPageController_upload",
+      "source": "packages/server/src/controller/admin/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "upload": {
+        "contentType": "multipart/form-data",
+        "field": "file"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/draft",
+      "operationId": "DraftController_getByOption",
+      "source": "packages/server/src/controller/admin/draft/draft.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "pageSize",
+          "type": "unknown",
+          "required": false,
+          "default": "5"
+        },
+        {
+          "in": "query",
+          "name": "toListView",
+          "type": "unknown",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "in": "query",
+          "name": "category",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "tags",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "sortCreatedAt",
+          "type": "SortOrder",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "startTime",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "endTime",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/draft",
+      "operationId": "DraftController_create",
+      "source": "packages/server/src/controller/admin/draft/draft.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "CreateDraftDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1draft.dto.ts#CreateDraftDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/draft/:id",
+      "operationId": "DraftController_delete",
+      "source": "packages/server/src/controller/admin/draft/draft.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/draft/:id",
+      "operationId": "DraftController_getOne",
+      "source": "packages/server/src/controller/admin/draft/draft.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/draft/:id",
+      "operationId": "DraftController_update",
+      "source": "packages/server/src/controller/admin/draft/draft.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "type": "UpdateDraftDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1draft.dto.ts#UpdateDraftDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/draft/publish",
+      "operationId": "DraftController_publish",
+      "source": "packages/server/src/controller/admin/draft/draft.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "id",
+          "type": "number",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "type": "PublishDraftDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1draft.dto.ts#PublishDraftDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/img",
+      "operationId": "ImgController_getByOption",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "pageSize",
+          "type": "unknown",
+          "required": false,
+          "default": "5"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/img/:sign",
+      "operationId": "ImgController_delete",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "sign",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/img/all",
+      "operationId": "ImgController_getAll",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/img/all/delete",
+      "operationId": "ImgController_deleteALL",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/img/export",
+      "operationId": "ImgController_exportAllImgs",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/img/rewrite-base-url",
+      "operationId": "ImgController_rewriteBaseUrl",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "{ oldBase?: string; newBase?: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/img/scan",
+      "operationId": "ImgController_scanImgsOfArticles",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/img/transfer-remote",
+      "operationId": "ImgController_transferRemote",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "{ content?: string; siteHost?: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/img/upload",
+      "operationId": "ImgController_upload",
+      "source": "packages/server/src/controller/admin/img/img.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "favicon",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "waterMarkText",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "withWaterMark",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "upload": {
+        "contentType": "multipart/form-data",
+        "field": "file"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/init",
+      "operationId": "InitController_initSystem",
+      "source": "packages/server/src/controller/admin/init/init.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "InitDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1init.dto.ts#InitDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/init/upload",
+      "operationId": "InitController_uploadImg",
+      "source": "packages/server/src/controller/admin/init/init.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "favicon",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "upload": {
+        "contentType": "multipart/form-data",
+        "field": "file"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/isr",
+      "operationId": "ISRController_getISRSetting",
+      "source": "packages/server/src/controller/admin/isr/isr.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/isr",
+      "operationId": "ISRController_activeISR",
+      "source": "packages/server/src/controller/admin/isr/isr.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/isr",
+      "operationId": "ISRController_updateISRSetting",
+      "source": "packages/server/src/controller/admin/isr/isr.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "ISRSetting",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1setting.dto.ts#ISRSetting"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/log",
+      "operationId": "LogController_get",
+      "source": "packages/server/src/controller/admin/log/log.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "pageSize",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "event",
+          "type": "EventType",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta",
+      "operationId": "MetaController_getAllMeta",
+      "source": "packages/server/src/controller/admin/meta/meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta/about",
+      "operationId": "AboutMetaController_getAbout",
+      "source": "packages/server/src/controller/admin/about/about.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/meta/about",
+      "operationId": "AboutMetaController_updateAbout",
+      "source": "packages/server/src/controller/admin/about/about.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "{ content: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/meta/link",
+      "operationId": "LinkMetaController_deleteByQuery",
+      "source": "packages/server/src/controller/admin/link/link.meta.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta/link",
+      "operationId": "LinkMetaController_get",
+      "source": "packages/server/src/controller/admin/link/link.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/meta/link",
+      "operationId": "LinkMetaController_create",
+      "source": "packages/server/src/controller/admin/link/link.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "LinkDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1link.dto.ts#LinkDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/meta/link",
+      "operationId": "LinkMetaController_update",
+      "source": "packages/server/src/controller/admin/link/link.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "LinkDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1link.dto.ts#LinkDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/meta/link/*",
+      "operationId": "LinkMetaController_deleteByPath",
+      "source": "packages/server/src/controller/admin/link/link.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/meta/link/:name",
+      "operationId": "LinkMetaController_deleteByParam",
+      "source": "packages/server/src/controller/admin/link/link.meta.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta/menu",
+      "operationId": "MenuMetaController_get",
+      "source": "packages/server/src/controller/admin/menu/menu.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/meta/menu",
+      "operationId": "MenuMetaController_update",
+      "source": "packages/server/src/controller/admin/menu/menu.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "MenuSetting",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1setting.dto.ts#MenuSetting"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta/reward",
+      "operationId": "RewardMetaController_get",
+      "source": "packages/server/src/controller/admin/reward/reward.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/meta/reward",
+      "operationId": "RewardMetaController_create",
+      "source": "packages/server/src/controller/admin/reward/reward.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "RewardDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1reward.dto.ts#RewardDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/meta/reward",
+      "operationId": "RewardMetaController_update",
+      "source": "packages/server/src/controller/admin/reward/reward.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "RewardDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1reward.dto.ts#RewardDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/meta/reward/:name",
+      "operationId": "RewardMetaController_delete",
+      "source": "packages/server/src/controller/admin/reward/reward.meta.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta/site",
+      "operationId": "SiteMetaController_get",
+      "source": "packages/server/src/controller/admin/site/site.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/meta/site",
+      "operationId": "SiteMetaController_update",
+      "source": "packages/server/src/controller/admin/site/site.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "UpdateSiteInfoDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1site.dto.ts#UpdateSiteInfoDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta/social",
+      "operationId": "SocialMetaController_get",
+      "source": "packages/server/src/controller/admin/social/social.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/meta/social",
+      "operationId": "SocialMetaController_create",
+      "source": "packages/server/src/controller/admin/social/social.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "SocialDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1social.dto.ts#SocialDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/meta/social",
+      "operationId": "SocialMetaController_update",
+      "source": "packages/server/src/controller/admin/social/social.meta.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "SocialDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1social.dto.ts#SocialDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/meta/social/:type",
+      "operationId": "SocialMetaController_delete",
+      "source": "packages/server/src/controller/admin/social/social.meta.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "type",
+          "type": "SocialType",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/meta/social/types",
+      "operationId": "SocialMetaController_getTypes",
+      "source": "packages/server/src/controller/admin/social/social.meta.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/pipeline",
+      "operationId": "PipelineController_getAllPipelines",
+      "source": "packages/server/src/controller/admin/pipeline/pipeline.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/pipeline",
+      "operationId": "PipelineController_createPipeline",
+      "source": "packages/server/src/controller/admin/pipeline/pipeline.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "CreatePipelineDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1pipeline.dto.ts#CreatePipelineDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/pipeline/:id",
+      "operationId": "PipelineController_deletePipelineById",
+      "source": "packages/server/src/controller/admin/pipeline/pipeline.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/pipeline/:id",
+      "operationId": "PipelineController_getPipelineById",
+      "source": "packages/server/src/controller/admin/pipeline/pipeline.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/pipeline/:id",
+      "operationId": "PipelineController_updatePipelineById",
+      "source": "packages/server/src/controller/admin/pipeline/pipeline.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "type": "CreatePipelineDto",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1pipeline.dto.ts#CreatePipelineDto"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/pipeline/config",
+      "operationId": "PipelineController_getPipelineConfig",
+      "source": "packages/server/src/controller/admin/pipeline/pipeline.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/pipeline/trigger/:id",
+      "operationId": "PipelineController_triggerPipelineById",
+      "source": "packages/server/src/controller/admin/pipeline/pipeline.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "type": "{ input?: any }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/setting/layout",
+      "operationId": "SettingController_getLayoutSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/setting/layout",
+      "operationId": "SettingController_updateLayoutSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "LayoutSetting",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1setting.dto.ts#LayoutSetting"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/setting/login",
+      "operationId": "SettingController_getLoginSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/setting/login",
+      "operationId": "SettingController_updateLoginSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "LoginSetting",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1setting.dto.ts#LoginSetting"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/setting/static",
+      "operationId": "SettingController_getStaticSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/setting/static",
+      "operationId": "SettingController_updateStaticSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "Partial<StaticSetting>",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1setting.dto.ts#StaticSetting"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/setting/waline",
+      "operationId": "SettingController_getWalineSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/setting/waline",
+      "operationId": "SettingController_updateWalineSetting",
+      "source": "packages/server/src/controller/admin/setting/setting.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "WalineSetting",
+        "definitions": [
+          {
+            "$ref": "#/models/packages~1server~1src~1types~1setting.dto.ts#WalineSetting"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/tag/:name",
+      "operationId": "TagController_deleteTagByName",
+      "source": "packages/server/src/controller/admin/tag/tag.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/tag/:name",
+      "operationId": "TagController_getArticlesByTagName",
+      "source": "packages/server/src/controller/admin/tag/tag.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/tag/:name",
+      "operationId": "TagController_updateTagByName",
+      "source": "packages/server/src/controller/admin/tag/tag.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "value",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/tag/all",
+      "operationId": "TagController_getAllTags",
+      "source": "packages/server/src/controller/admin/tag/tag.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/token",
+      "operationId": "TokenController_getAllApiTokens",
+      "source": "packages/server/src/controller/admin/token/token.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/token",
+      "operationId": "TokenController_createApiToken",
+      "source": "packages/server/src/controller/admin/token/token.controller.ts",
+      "parameters": [],
+      "requestBody": {
+        "type": "{ name: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/token/:id",
+      "operationId": "TokenController_deleteApiTokenByName",
+      "source": "packages/server/src/controller/admin/token/token.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/article",
+      "operationId": "PublicController_getByOption",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "type": "number",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "pageSize",
+          "type": "number | undefined",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "toListView",
+          "type": "unknown",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "in": "query",
+          "name": "regMatch",
+          "type": "unknown",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "in": "query",
+          "name": "withWordCount",
+          "type": "unknown",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "in": "query",
+          "name": "category",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "tags",
+          "type": "string",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "sortCreatedAt",
+          "type": "SortOrder",
+          "required": false
+        },
+        {
+          "in": "query",
+          "name": "sortTop",
+          "type": "SortOrder",
+          "required": false
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/article/:id",
+      "operationId": "PublicController_getArticleByIdOrPathname",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/article/:id",
+      "operationId": "PublicController_getArticleByIdOrPathnameWithPassword",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number | string",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "type": "{ password: string }",
+        "definitions": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/article/viewer/:id",
+      "operationId": "PublicController_getViewerByArticleIdOrPathname",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "type": "number | string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/category",
+      "operationId": "PublicController_getArticlesByCategory",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/comment-setting",
+      "operationId": "PublicController_getCommentSetting",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/customPage",
+      "operationId": "PublicController_getOneByPath",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "path",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/customPage/all",
+      "operationId": "PublicController_getAll",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/meta",
+      "operationId": "PublicController_getBuildMeta",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/search",
+      "operationId": "PublicController_searchArticle",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "value",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/tag",
+      "operationId": "PublicController_getArticlesByTag",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/tag/:name",
+      "operationId": "PublicController_getArticlesByTagName",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/timeline",
+      "operationId": "PublicController_getTimeLineInfo",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/viewer",
+      "operationId": "PublicController_getViewer",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/viewer",
+      "operationId": "PublicController_addViewer",
+      "source": "packages/server/src/controller/public/public.controller.ts",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "isNew",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "in": "query",
+          "name": "isNewByPath",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/c/:pathname*",
+      "operationId": "PublicCustomPageController_getPageContent",
+      "source": "packages/server/src/controller/customPage/customPage.controller.ts",
+      "parameters": [
+        {
+          "in": "path",
+          "name": "pathname",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/custom/:pathname*",
+      "operationId": "PublicOldCustomPageRedirectController_redirect",
+      "source": "packages/server/src/controller/customPage/customPage.controller.ts",
+      "parameters": []
+    }
+  ],
+  "models": {
+    "packages/server/src/types/article.dto.ts#UpdateArticleDto": {
+      "name": "UpdateArticleDto",
+      "source": "packages/server/src/types/article.dto.ts",
+      "declaration": "export class UpdateArticleDto {\n  title?: string;\n  content?: string;\n  tags?: string[];\n  category?: string;\n  hidden?: boolean;\n  top?: number;\n  private?: boolean;\n  password?: string;\n  deleted?: boolean;\n  viewer?: number;\n  visited?: number;\n  updatedAt?: Date;\n  author?: string;\n  copyright?: string;\n  pathname?: string;\n  cover?: string;\n}"
+    },
+    "packages/server/src/types/article.dto.ts#CreateArticleDto": {
+      "name": "CreateArticleDto",
+      "source": "packages/server/src/types/article.dto.ts",
+      "declaration": "export class CreateArticleDto {\n  title: string;\n  content?: string;\n  tags?: string[];\n  top?: number;\n  category: string;\n  hidden?: boolean;\n  private?: boolean;\n  password?: string;\n  updatedAt?: Date;\n  createdAt?: Date;\n  author?: string;\n  copyright?: string;\n  pathname?: string;\n  cover?: string;\n}"
+    },
+    "packages/server/src/types/user.dto.ts#UpdateUserDto": {
+      "name": "UpdateUserDto",
+      "source": "packages/server/src/types/user.dto.ts",
+      "declaration": "export class UpdateUserDto {\n  id?: number;\n  name: string;\n  password: string;\n  nickname?: string;\n}"
+    },
+    "packages/server/src/types/setting.dto.ts#HttpsSetting": {
+      "name": "HttpsSetting",
+      "source": "packages/server/src/types/setting.dto.ts",
+      "declaration": "export interface HttpsSetting {\n  redirect: boolean;\n}"
+    },
+    "packages/server/src/types/category.dto.ts#CreateCategoryDto": {
+      "name": "CreateCategoryDto",
+      "source": "packages/server/src/types/category.dto.ts",
+      "declaration": "export class CreateCategoryDto {\n  name: string;\n}"
+    },
+    "packages/server/src/types/category.dto.ts#ReorderCategoriesDto": {
+      "name": "ReorderCategoriesDto",
+      "source": "packages/server/src/types/category.dto.ts",
+      "declaration": "export class ReorderCategoriesDto {\n  names: string[];\n}"
+    },
+    "packages/server/src/types/category.dto.ts#UpdateCategoryDto": {
+      "name": "UpdateCategoryDto",
+      "source": "packages/server/src/types/category.dto.ts",
+      "declaration": "export class UpdateCategoryDto {\n  name?: string;\n  password?: string;\n  private?: boolean;\n  hidden?: boolean;\n  order?: number;\n}"
+    },
+    "packages/server/src/types/collaborator.ts#Collaborator": {
+      "name": "Collaborator",
+      "source": "packages/server/src/types/collaborator.ts",
+      "declaration": "export interface Collaborator {\n  name: string;\n  nickname: string;\n  password: string;\n  permission: Permission[];\n}"
+    },
+    "packages/server/src/scheme/customPage.schema.ts#CustomPage": {
+      "name": "CustomPage",
+      "source": "packages/server/src/scheme/customPage.schema.ts",
+      "declaration": "@Schema()\nexport class CustomPage extends Document {\n  @Prop({ index: true, unique: true })\n  name: string;\n\n  @Prop({ index: true, unique: true })\n  path: string;\n\n  @Prop({ index: true, default: 'file' })\n  type: CustomType;\n\n  @Prop()\n  html: string;\n\n  @Prop({\n    index: true,\n    default: () => {\n      return new Date();\n    },\n  })\n  createdAt: Date;\n\n  @Prop({\n    index: true,\n    default: () => {\n      return new Date();\n    },\n  })\n  updatedAt: Date;\n}"
+    },
+    "packages/server/src/types/draft.dto.ts#UpdateDraftDto": {
+      "name": "UpdateDraftDto",
+      "source": "packages/server/src/types/draft.dto.ts",
+      "declaration": "export class UpdateDraftDto {\n  title?: string;\n  content?: string;\n  tags?: string[];\n  category?: string;\n  deleted?: boolean;\n  author?: string;\n  draft?: string;\n}"
+    },
+    "packages/server/src/types/draft.dto.ts#CreateDraftDto": {
+      "name": "CreateDraftDto",
+      "source": "packages/server/src/types/draft.dto.ts",
+      "declaration": "export class CreateDraftDto {\n  title: string;\n  content?: string;\n  tags?: string[];\n  category: string;\n  author?: string;\n  draft?: string;\n}"
+    },
+    "packages/server/src/types/draft.dto.ts#PublishDraftDto": {
+      "name": "PublishDraftDto",
+      "source": "packages/server/src/types/draft.dto.ts",
+      "declaration": "export class PublishDraftDto {\n  hidden?: boolean;\n  pathname?: string;\n  private?: boolean;\n  password?: string;\n  copyright?: string;\n}"
+    },
+    "packages/server/src/types/init.dto.ts#InitDto": {
+      "name": "InitDto",
+      "source": "packages/server/src/types/init.dto.ts",
+      "declaration": "export class InitDto {\n  user: {\n    username: string;\n    password: string;\n    nickname: string;\n  };\n  siteInfo: SiteInfo;\n}"
+    },
+    "packages/server/src/types/setting.dto.ts#ISRSetting": {
+      "name": "ISRSetting",
+      "source": "packages/server/src/types/setting.dto.ts",
+      "declaration": "export interface ISRSetting {\n  mode: 'delay' | 'onDemand';\n  delay: number;\n}"
+    },
+    "packages/server/src/types/link.dto.ts#LinkDto": {
+      "name": "LinkDto",
+      "source": "packages/server/src/types/link.dto.ts",
+      "declaration": "export class LinkDto {\n  url: string;\n  name: string;\n  desc: string;\n  logo: string;\n  /** Original 伙伴名 when renaming, so a URL name updates in place instead of inserting. */\n  oldName?: string;\n}"
+    },
+    "packages/server/src/types/setting.dto.ts#MenuSetting": {
+      "name": "MenuSetting",
+      "source": "packages/server/src/types/setting.dto.ts",
+      "declaration": "export interface MenuSetting {\n  data: MenuItem[];\n}"
+    },
+    "packages/server/src/types/pipeline.dto.ts#CreatePipelineDto": {
+      "name": "CreatePipelineDto",
+      "source": "packages/server/src/types/pipeline.dto.ts",
+      "declaration": "export class CreatePipelineDto {\n  name: string;\n  description?: string;\n  enabled: boolean;\n  eventName: string;\n  script: string;\n  deps?: string[];\n}"
+    },
+    "packages/server/src/types/reward.dto.ts#RewardDto": {
+      "name": "RewardDto",
+      "source": "packages/server/src/types/reward.dto.ts",
+      "declaration": "export class RewardDto {\n  value: string;\n  name: string;\n}"
+    },
+    "packages/server/src/types/setting.dto.ts#StaticSetting": {
+      "name": "StaticSetting",
+      "source": "packages/server/src/types/setting.dto.ts",
+      "declaration": "export class StaticSetting {\n  storageType: StorageType;\n  picgoConfig: any;\n  picgoPlugins: string;\n  enableWaterMark: boolean;\n  waterMarkText: string;\n  enableWebp: boolean;\n  /** Output format when enableWebp is on. Default webp. */\n  compressFormat?: CompressFormat;\n}"
+    },
+    "packages/server/src/types/setting.dto.ts#WalineSetting": {
+      "name": "WalineSetting",
+      "source": "packages/server/src/types/setting.dto.ts",
+      "declaration": "export interface WalineSetting {\n  'smtp.enabled': boolean;\n  'smtp.port': number;\n  'smtp.host': string;\n  'smtp.user': string;\n  'smtp.password': string;\n  'sender.name': string;\n  'sender.email': string;\n  authorEmail: string;\n  webhook?: string;\n  forceLoginComment: boolean;\n  otherConfig?: string;\n}"
+    },
+    "packages/server/src/types/setting.dto.ts#LayoutSetting": {
+      "name": "LayoutSetting",
+      "source": "packages/server/src/types/setting.dto.ts",
+      "declaration": "export interface LayoutSetting {\n  script: string;\n  html: string;\n  css: string;\n  head: string;\n}"
+    },
+    "packages/server/src/types/setting.dto.ts#LoginSetting": {
+      "name": "LoginSetting",
+      "source": "packages/server/src/types/setting.dto.ts",
+      "declaration": "export interface LoginSetting {\n  enableMaxLoginRetry: boolean;\n  maxRetryTimes: number;\n  durationSeconds: number;\n  expiresIn: number;\n}"
+    },
+    "packages/server/src/types/site.dto.ts#UpdateSiteInfoDto": {
+      "name": "UpdateSiteInfoDto",
+      "source": "packages/server/src/types/site.dto.ts",
+      "declaration": "export type UpdateSiteInfoDto = Partial<SiteInfo> | Partial<updateUserDto>;"
+    },
+    "packages/server/src/types/social.dto.ts#SocialDto": {
+      "name": "SocialDto",
+      "source": "packages/server/src/types/social.dto.ts",
+      "declaration": "export class SocialDto {\n  value: string;\n  type: SocialType;\n  label?: string;\n  icon?: string;\n  id?: string;\n}"
+    }
+  }
+}

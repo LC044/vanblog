@@ -89,6 +89,10 @@ curl -L https://raw.githubusercontent.com/Mereithhh/vanblog/master/scripts/vanbl
 
 具体请移步项目文档：[快速上手](https://vanblog.mereith.com/guide/get-started.html)
 
+## Agent Skill 与 CLI
+
+[VanBlog Skill](packages/cli/skills/vanblog/SKILL.md) 提供本地图片上传、Markdown 草稿保存、文章发布和核验流程，复用现有 API Token，图片以文件流上传，无需把 Base64 塞进对话。[CLI](packages/cli/README.md) 同时支持完整 HTTP API，可离线查询接口或读取实例 Swagger。需要 Node.js 18+，复制整个 `packages/cli/skills/vanblog` 目录即可安装 Skill。
+
 ## 反代
 
 请参考： [反代](https://vanblog.mereith.com/reference/reverse-proxy.html)

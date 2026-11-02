@@ -12,6 +12,7 @@ on:
       - 'packages/**'
       - 'scripts/start.js'
       - 'scripts/check-image-runtime.js'
+      - 'scripts/generate-cli-api-index.cjs'
       - 'scripts/tests/docker-image-startup.sh'
       - 'entrypoint.sh'
       - 'caddyTemplate.json'
@@ -96,7 +97,7 @@ jobs:
             org.opencontainers.image.version=${{ steps.config.outputs.version }}
 
   test:
-    name: Server, website and MCP tests
+    name: Server, website, MCP and CLI tests
     needs: metadata
     runs-on: ubuntu-22.04
     timeout-minutes: 20
@@ -120,6 +121,10 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Test CLI and verify API index
+        run: |
+          pnpm --filter vanblog-cli test
+          node scripts/generate-cli-api-index.cjs --check
       - name: Type-check and test website
         run: |
           pnpm --filter @vanblog/theme-default exec tsc --noEmit
