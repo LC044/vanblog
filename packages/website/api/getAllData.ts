@@ -86,6 +86,7 @@ export interface LinkItem {
 export interface SiteInfo {
   author: string;
   authorDesc: string;
+  authDesc?: string;
   authorLogo: string;
   authorLogoDark?: string;
   siteLogo: string;

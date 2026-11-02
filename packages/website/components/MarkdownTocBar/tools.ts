@@ -185,7 +185,7 @@ const trimArrZero = (arr: any) => {
 export const getEl = (item: NavItem, all: NavItem[]) => {
   const tagName = `h${item.level}`;
   const target = normalizeHeadingText(item.text);
-  const els = Array.from(document.querySelectorAll(`${tagName}[data-id]`)).filter(
+  const els = Array.from(document.querySelectorAll<HTMLElement>(`${tagName}[data-id]`)).filter(
     (el) => normalizeHeadingText(el.getAttribute("data-id")) === target
   );
   if (els.length > 1) {

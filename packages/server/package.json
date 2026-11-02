@@ -43,7 +43,7 @@
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.4.3",
     "@nestjs/schedule": "^2.2.3",
-    "@nestjs/swagger": "^6.3.0",
+    "@nestjs/swagger": "^7.4.2",
     "@types/line-reader": "^0.0.34",
     "@types/request-ip": "^0.0.37",
     "axios": "^1.6.2",

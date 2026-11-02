@@ -12,12 +12,13 @@ export function mermaidForViewer(options?: { theme?: string }): BytemdPlugin {
   const official = mermaidPlugin();
   return {
     ...official,
-    viewerEffect({ markdownBody }) {
+    viewerEffect(context) {
+      const { markdownBody } = context;
       const isDark =
         detectPaintIsDark(markdownBody) || isDarkPaintTheme(options?.theme);
       const themed = mermaidPlugin(mermaidInitConfig(isDark));
       applyMermaidThemeToTree(markdownBody, isDark);
-      const cleanup = themed.viewerEffect?.({ markdownBody });
+      const cleanup = themed.viewerEffect?.(context);
       const stopWatch = watchMermaidContainers(markdownBody, isDark);
       return () => {
         if (typeof cleanup === "function") {

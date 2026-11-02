@@ -41,7 +41,7 @@ export const getArticlesByOption = async (
     }
   }
 };
-export const getArticlesByTimeLine = async () => {
+export const getArticlesByTimeLine = async (): Promise<Record<string, Article[]>> => {
   try {
     const url = `${config.baseUrl}api/public/timeline`;
     const res = await fetch(url);

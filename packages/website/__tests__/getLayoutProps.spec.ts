@@ -114,6 +114,12 @@ describe("siteInfo is required on public meta (#207)", () => {
 });
 
 describe("getLayoutProps / getAuthorCardProps with complete siteInfo (#207)", () => {
+  it("accepts the server's authDesc field when authorDesc is absent", () => {
+    const { authorDesc, ...siteInfo } = completeSiteInfo;
+    const author = getAuthorCardProps(metaOf({ ...siteInfo, authDesc: "Server author description" }));
+    expect(author.desc).toBe("Server author description");
+    expect(getAuthorCardProps(metaOf(siteInfo)).desc).toBe("");
+  });
   it("maps a normal site without changing public layout defaults", () => {
     const data = metaOf(completeSiteInfo, {
       categories: ["随笔", "教程"],
@@ -223,9 +229,9 @@ describe("sparse siteInfo fields do not crash (#207)", () => {
     expect(layout.siteName).toBeUndefined();
     expect(layout.siteDesc).toBeUndefined();
 
-    expect(author.author).toBeUndefined();
-    expect(author.desc).toBeUndefined();
-    expect(author.logo).toBeUndefined();
+    expect(author.author).toBe("");
+    expect(author.desc).toBe("");
+    expect(author.logo).toBe("");
     expect(author.logoDark).toBe("");
     expect(author.showSubMenu).toBe("false");
     expect(author.showRSS).toBe("true");

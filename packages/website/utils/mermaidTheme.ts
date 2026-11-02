@@ -121,9 +121,7 @@ export function applyMermaidThemeToTree(
 }
 
 export function watchMermaidContainers(
-  root: {
-    querySelectorAll: (selector: string) => ArrayLike<{ classList: { add: (n: string) => void; remove: (n: string) => void }; setAttribute: (n: string, v: string) => void }>;
-  } & { ownerDocument?: Document },
+  root: ParentNode & Node,
   isDark: boolean
 ): () => void {
   applyMermaidThemeToTree(root, isDark);
@@ -131,6 +129,6 @@ export function watchMermaidContainers(
     return () => undefined;
   }
   const obs = new MutationObserver(() => applyMermaidThemeToTree(root, isDark));
-  obs.observe(root as Node, { childList: true, subtree: true });
+  obs.observe(root, { childList: true, subtree: true });
   return () => obs.disconnect();
 }

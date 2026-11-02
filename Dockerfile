@@ -5,7 +5,7 @@ ENV NODE_OPTIONS='--max_old_space_size=4096 --openssl-legacy-provider'
 ENV EEE=production
 WORKDIR /app
 USER root
-RUN apk add --update python3 make g++ && rm -rf /var/cache/apk/*
+RUN apk add --update python3 py3-setuptools make g++ && rm -rf /var/cache/apk/*
 COPY ./packages/admin/ ./
 RUN corepack enable
 RUN corepack prepare pnpm@8.11.0 --activate

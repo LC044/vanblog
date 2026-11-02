@@ -55,7 +55,10 @@ export function timelineMonthKey(year: number, month: number): string {
 export function parseTimelineDate(
   createdAt: unknown
 ): { year: number; month: number } | null {
-  if (createdAt == null || createdAt === "") {
+  if (
+    createdAt == null || createdAt === "" ||
+    (!(createdAt instanceof Date) && typeof createdAt !== "string" && typeof createdAt !== "number")
+  ) {
     return null;
   }
   const date = createdAt instanceof Date ? createdAt : new Date(createdAt);

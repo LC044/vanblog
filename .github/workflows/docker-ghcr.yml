@@ -94,7 +94,7 @@ jobs:
             org.opencontainers.image.version=${{ steps.config.outputs.version }}
 
   test:
-    name: Server and MCP tests
+    name: Server, website and MCP tests
     needs: metadata
     runs-on: ubuntu-22.04
     timeout-minutes: 20
@@ -118,6 +118,12 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Type-check and test website
+        run: |
+          pnpm --filter @vanblog/theme-default exec tsc --noEmit
+          pnpm --filter @vanblog/theme-default exec vitest run
+      - name: Compile server
+        run: pnpm --filter @vanblog/server build
       - name: Run server tests including real MCP integration
         env:
           VANBLOG_MCP_TEST_MONGO_URL: mongodb://127.0.0.1:27017

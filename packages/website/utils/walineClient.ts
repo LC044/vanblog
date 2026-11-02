@@ -1,3 +1,5 @@
+import type { WalineInitOptions } from "@waline/client";
+
 export type WalineCommentSetting = {
   forceLoginComment?: boolean;
   imageUploader?: unknown;
@@ -16,22 +18,9 @@ export type WalineCommentSetting = {
   turnstileKey?: unknown;
 };
 
-export type WalineInitExtra = {
+export type WalineInitExtra = Partial<Pick<WalineInitOptions, (typeof CLIENT_EXTRA_KEYS)[number]>> & {
   login: "enable" | "force";
   imageUploader?: false;
-  wordLimit?: unknown;
-  pageSize?: unknown;
-  meta?: unknown;
-  requiredMeta?: unknown;
-  emoji?: unknown;
-  lang?: unknown;
-  locale?: unknown;
-  dark?: unknown;
-  search?: unknown;
-  reaction?: unknown;
-  copyright?: unknown;
-  recaptchaV3Key?: unknown;
-  turnstileKey?: unknown;
 };
 
 const CLIENT_EXTRA_KEYS = [
@@ -70,7 +59,8 @@ export function buildWalineInitOptions(
   for (const key of CLIENT_EXTRA_KEYS) {
     const value = setting?.[key];
     if (value !== undefined) {
-      extra[key] = value;
+      // Preserve the administrator-configured JSON options at the API boundary.
+      (extra as Record<string, unknown>)[key] = value;
     }
   }
   return extra;

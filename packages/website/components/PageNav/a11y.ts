@@ -129,7 +129,7 @@ type FocusableEl = {
 export function handlePageNavKeyDown(event: {
   key: string;
   currentTarget: { querySelectorAll: (selector: string) => ArrayLike<FocusableEl> };
-  target?: EventTarget | null;
+  target?: unknown;
   preventDefault: () => void;
 }): number | null {
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {

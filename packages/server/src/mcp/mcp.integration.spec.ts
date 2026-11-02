@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { JwtModule, JwtService } from '@nestjs/jwt';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { getModelToken } from '@nestjs/mongoose';
 import { INestApplication } from '@nestjs/common';
 import { createConnection, Connection } from 'mongoose';
@@ -374,6 +375,11 @@ describeMongo('MCP HTTP + real MongoDB + existing API Token', () => {
         .compile();
       rootApp = module.createNestApplication({ logger: false });
       await rootApp.init();
+      const document = SwaggerModule.createDocument(
+        rootApp,
+        new DocumentBuilder().setTitle('VanBlog test').setVersion('1.0').build(),
+      );
+      expect(document.paths['/api/admin/article']).toBeDefined();
       await request(rootApp.getHttpServer())
         .get('/api/mcp')
         .set('Authorization', `Bearer ${token}`)
