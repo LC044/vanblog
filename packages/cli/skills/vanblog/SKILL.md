@@ -33,6 +33,14 @@ node <skill-dir>/scripts/vanblog.js images upload "./文章图片" --recursive -
 默认允许站点配置的水印；明确需要原图时使用 `--watermark false`。
 退出码 3 表示部分失败，保留成功 URL，只对 `failed` 中的失败文件重试。认证或网络错误会停止剩余上传。
 
+## 图片地址约束
+
+所有写入文章的图片地址必须使用完整的 HTTP(S) URL；站内图片必须包含 `VANBLOG_URL` 前缀，禁止直接使用 `/static/img/...` 等相对路径或 `//...` 协议相对地址。
+此约束适用于 Markdown 图片、引用式图片定义、HTML `<img src>` 和封面字段，也适用于修改已有文章和通过通用 API 写入正文。
+优先使用上传清单中的完整 `url` 或 `markdown`。若接口或原文只有相对路径，将去掉末尾 `/` 的 `VANBLOG_URL` 与以 `/` 开头的图片路径拼接；已有完整 URL 不重复添加前缀。
+例如 `VANBLOG_URL=https://blog.example.com` 时，`/static/img/preview.webp` 必须写为 `https://blog.example.com/static/img/preview.webp`。
+保存草稿、更新文章及发布前，检查所有图片引用并补齐地址；不得为缩短正文而改回相对路径。
+
 ## 2. 写正文并保存草稿
 
 将正文写入本地 Markdown 文件，保留用户要求的内容及图片位置。文章包含摘要与正文时使用 `<!-- more -->` 分隔。
