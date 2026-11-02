@@ -28,30 +28,37 @@ export class SiteMapProvider {
     }
     this.timer = setTimeout(
       () => {
-        this.generateSiteMapFn(info);
+        this.generateSiteMapFn(info).catch((error) => {
+          this.logger.error('生成 SiteMap 失败', error?.stack);
+        });
       },
       delay || 60 * 1000,
     );
   }
 
   async generateSiteMapFn(info?: string) {
-    this.logger.log(info + '重新生成 SiteMap ');
-    const pathnames = await this.getSiteUrls();
     const siteInfo = await this.metaProvider.getSiteInfo();
     const baseUrl = siteInfo?.baseUrl || '';
+    try {
+      if (!['http:', 'https:'].includes(new URL(baseUrl).protocol)) return;
+    } catch {
+      // A fresh installation has no site URL until the setup form is completed.
+      return;
+    }
+    this.logger.log(info + '重新生成 SiteMap ');
+    const pathnames = await this.getSiteUrls();
     const smStream = new SitemapStream({ hostname: washUrl(baseUrl) });
+    const completed = streamToPromise(smStream);
     pathnames.forEach((pathname) => {
       smStream.write({
         url: pathname,
       });
     });
-    streamToPromise(smStream).then((sm) => {
-      const sitemapPath = path.join(config.staticPath, 'sitemap');
-
-      fs.mkdirSync(sitemapPath, { recursive: true });
-      fs.writeFileSync(path.join(sitemapPath, 'sitemap.xml'), sm);
-    });
     smStream.end();
+    const sm = await completed;
+    const sitemapPath = path.join(config.staticPath, 'sitemap');
+    fs.mkdirSync(sitemapPath, { recursive: true });
+    fs.writeFileSync(path.join(sitemapPath, 'sitemap.xml'), sm);
   }
   async getArticleUrls() {
     const articles = await this.articleProvider.getAll('list', false, false);

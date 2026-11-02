@@ -117,6 +117,8 @@ export class WebsiteProvider {
         env: {
           ...process.env,
           ...loadEnvs,
+          // Docker's HOSTNAME is a container ID; Next standalone must also accept loopback traffic.
+          ...(process.env.NODE_ENV === 'production' ? { HOSTNAME: '0.0.0.0' } : {}),
         },
         cwd: websiteRoot,
         detached: true,

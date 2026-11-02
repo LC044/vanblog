@@ -30,6 +30,7 @@ describe('WebsiteProvider CDN prefix', () => {
   let prevCwd: string;
   let prevNodeEnv: string | undefined;
   let prevCdn: string | undefined;
+  let prevHostname: string | undefined;
 
   beforeEach(() => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vanblog-website-cdn-'));
@@ -46,6 +47,8 @@ describe('WebsiteProvider CDN prefix', () => {
     prevCwd = process.cwd();
     prevNodeEnv = process.env.NODE_ENV;
     prevCdn = process.env.VAN_BLOG_CDN_URL;
+    prevHostname = process.env.HOSTNAME;
+    process.env.HOSTNAME = 'docker-container-id';
     process.chdir(serverDir);
     process.env.NODE_ENV = 'production';
     process.env.VAN_BLOG_CDN_URL = 'https://cdn.example.com/';
@@ -55,6 +58,8 @@ describe('WebsiteProvider CDN prefix', () => {
   afterEach(() => {
     process.chdir(prevCwd);
     process.env.NODE_ENV = prevNodeEnv;
+    if (prevHostname == null) delete process.env.HOSTNAME;
+    else process.env.HOSTNAME = prevHostname;
     if (prevCdn == null) {
       delete process.env.VAN_BLOG_CDN_URL;
     } else {
@@ -102,6 +107,7 @@ describe('WebsiteProvider CDN prefix', () => {
         cwd: path.join(tmp, 'website'),
         env: expect.objectContaining({
           VAN_BLOG_CDN_URL: 'https://cdn.example.com/',
+          HOSTNAME: '0.0.0.0',
         }),
       }),
     );

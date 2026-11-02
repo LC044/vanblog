@@ -1,4 +1,49 @@
 import { SiteMapProvider } from './sitemap.provider';
+import fs from 'fs';
+
+describe('SiteMapProvider generation during first startup', () => {
+  it.each([undefined, {}, { baseUrl: '' }, { baseUrl: 'invalid' }, { baseUrl: 'file:///tmp' }])(
+    'skips generation until a valid HTTP(S) site URL is configured: %j',
+    async (siteInfo) => {
+      const provider = new SiteMapProvider(
+        {} as any,
+        {} as any,
+        {} as any,
+        {} as any,
+        {
+          getSiteInfo: async () => siteInfo,
+        } as any,
+      );
+      const getUrls = jest.spyOn(provider, 'getSiteUrls');
+      await expect(provider.generateSiteMapFn('startup')).resolves.toBeUndefined();
+      expect(getUrls).not.toHaveBeenCalled();
+    },
+  );
+
+  it('awaits stream generation and writes a sitemap with absolute URLs', async () => {
+    const provider = new SiteMapProvider(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {
+        getSiteInfo: async () => ({ baseUrl: 'https://blog.example.com/' }),
+      } as any,
+    );
+    jest.spyOn(provider, 'getSiteUrls').mockResolvedValue(['/', '/post/1']);
+    const mkdir = jest.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined);
+    const write = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => undefined);
+    try {
+      await provider.generateSiteMapFn('startup');
+      const xml = String(write.mock.calls[0][1]);
+      expect(xml).toContain('<loc>https://blog.example.com/</loc>');
+      expect(xml).toContain('<loc>https://blog.example.com/post/1</loc>');
+    } finally {
+      mkdir.mockRestore();
+      write.mockRestore();
+    }
+  });
+});
 
 function createProvider(total: number, articlesPerPage: number) {
   const articleProvider = {
@@ -30,10 +75,7 @@ describe('SiteMapProvider.getCategoryUrls (#359)', () => {
       { getArticlesPerPage: jest.fn() } as any,
     );
 
-    await expect(provider.getCategoryUrls()).resolves.toEqual([
-      '/category/随笔',
-      '/category/教程',
-    ]);
+    await expect(provider.getCategoryUrls()).resolves.toEqual(['/category/随笔', '/category/教程']);
     expect(categoryProvider.getPublicCategoryNames).toHaveBeenCalled();
   });
 });

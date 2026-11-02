@@ -24,7 +24,7 @@ ENV NODE_OPTIONS=--max_old_space_size=4096
 ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 WORKDIR /app
 RUN apk add --no-cache python3 py3-setuptools make g++ libc6-compat vips-dev fftw-dev
-COPY ./packages/server/ .
+COPY ./packages/server/package.json ./
 RUN corepack enable
 RUN corepack prepare pnpm@8.11.0 --activate
 RUN pnpm config set network-timeout 600000 -g
@@ -32,6 +32,7 @@ RUN pnpm config set registry https://registry.npmmirror.com -g
 RUN pnpm config set fetch-retries 20 -g
 RUN pnpm config set fetch-timeout 600000 -g
 RUN pnpm i
+COPY ./packages/server/ .
 RUN pnpm build
 
 # 前台：Alpine + sharp。musl 版本号可能是 1.2.4_git*，sharp 0.31 会报
