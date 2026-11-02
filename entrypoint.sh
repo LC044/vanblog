@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo "============================================="
 echo "欢迎使用 VanBlog 博客系统"
 echo "Github: https://github.com/mereithhh/vanblog"

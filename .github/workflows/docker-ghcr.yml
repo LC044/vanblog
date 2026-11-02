@@ -11,6 +11,8 @@ on:
     paths:
       - 'packages/**'
       - 'scripts/start.js'
+      - 'scripts/check-image-runtime.js'
+      - 'scripts/tests/docker-image-startup.sh'
       - 'entrypoint.sh'
       - 'caddyTemplate.json'
       - 'Dockerfile'
@@ -172,6 +174,13 @@ jobs:
           outputs: ${{ needs.metadata.outputs.publish == 'true' && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', needs.metadata.outputs.image) || 'type=cacheonly' }}
           cache-from: type=gha,scope=vanblog-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=vanblog-${{ matrix.arch }}
+
+      - name: Smoke-test actual container startup
+        if: needs.metadata.outputs.publish == 'true'
+        env:
+          IMAGE: ${{ needs.metadata.outputs.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: bash scripts/tests/docker-image-startup.sh "$IMAGE@$DIGEST"
 
       - name: Export platform digest
         if: needs.metadata.outputs.publish == 'true'

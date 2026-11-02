@@ -19,9 +19,11 @@ RUN pnpm i
 # RUN sed -i 's/\/assets/\/admin\/assets/g' dist/admin/index.html
 RUN pnpm build
 
-FROM node:18 as SERVER_BUILDER
+FROM node:18-alpine AS SERVER_BUILDER
 ENV NODE_OPTIONS=--max_old_space_size=4096
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 WORKDIR /app
+RUN apk add --no-cache python3 py3-setuptools make g++ libc6-compat vips-dev fftw-dev
 COPY ./packages/server/ .
 RUN corepack enable
 RUN corepack prepare pnpm@8.11.0 --activate
@@ -105,7 +107,10 @@ COPY caddyTemplate.json /app/caddyTemplate.json
 # 复制入口文件
 WORKDIR /app
 COPY ./scripts/start.js ./
+COPY ./scripts/check-image-runtime.js ./
 COPY ./entrypoint.sh ./
+# Validate native modules and the actual Caddy binary inside each final platform image.
+RUN node check-image-runtime.js
 ENV PORT 3001
 # 增加版本
 ARG VAN_BLOG_VERSIONS
